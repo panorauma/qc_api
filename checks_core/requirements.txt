@@ -1,0 +1,8 @@
+pydantic
+polars
+fastapi
+uvicorn
+asyncio
+dotenv
+psutil
+uptrace
