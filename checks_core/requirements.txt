@@ -6,3 +6,4 @@ asyncio
 dotenv
 psutil
 uptrace
+aiomysql #mariadb

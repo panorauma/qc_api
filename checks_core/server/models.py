@@ -1,8 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Dict, Any
 from enum import Enum
-from threading import Lock
-import os
 
 
 class DatasetRequest(BaseModel):
@@ -30,9 +28,3 @@ class TaskInfo(BaseModel):
     status: TaskStatus
     result: dict | None = None
     error: str | None = None
-
-
-# in-memory store
-TASKS: dict[str, TaskInfo] = {}
-TASKS_LOCK = Lock()
-MAX_TASKS = int(os.getenv("MAX_TASKS", 255))

@@ -3,6 +3,14 @@ import tempfile
 from typing import List, Dict, Any
 
 
+def _format_bytes(num_bytes: float) -> str:
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if abs(num_bytes) < 1024.0:
+            return f"{num_bytes:.2f}{unit}"
+        num_bytes /= 1024.0
+    return f"{num_bytes:.2f}PB"
+
+
 def json_rows_to_df(rows: List[Dict[str, Any]]) -> pl.DataFrame:
     """
     Convert json as list of dicts into polars dataframe.
