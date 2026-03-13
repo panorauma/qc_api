@@ -31,7 +31,7 @@ class SchemaValidator(BaseValidator):
                 "miss_description",
                 "other_symbols",
                 "pos1_char",
-                "over_60char",
+                "under_64char",
             }
             if sch_checks == "all"
             else {
@@ -40,7 +40,7 @@ class SchemaValidator(BaseValidator):
                 "miss_description",
                 "other_symbols",
                 "pos1_char",
-                "over_60char",
+                "under_64char",
             }
         )
 
@@ -130,13 +130,13 @@ class SchemaValidator(BaseValidator):
             }
 
         # Variable name too long
-        if "over_60char" in checks:
+        if "under_64char" in checks:
             bad = (
                 vars_df.filter(pl.col("VariableName").str.len_chars() > 60)
                 .to_series()
                 .to_list()
             )
-            results["over_60char"] = {
+            results["under_64char"] = {
                 "count": len(bad),
                 "issues": bad,
             }

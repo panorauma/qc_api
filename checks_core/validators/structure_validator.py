@@ -119,6 +119,6 @@ class StructureValidator(BaseValidator):
             missing = [v for v in MINIMAL_VARS if v not in columns]
             results["minimal_var"] = {"count": len(missing), "issues": missing}
 
-        del schema
+        del schema  # no longer needed
 
         return self.export_long_table(results, as_json)
