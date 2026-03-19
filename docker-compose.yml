@@ -1,0 +1,17 @@
+services:
+  mariadb:
+    image: mariadb:12.2.2
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: myapp
+      MARIADB_USER: myuser
+      MARIADB_PASSWORD: mypassword
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - 3306:3306 # Provides host access
+
+volumes:
+  db_data: #create local folder, let docker handle

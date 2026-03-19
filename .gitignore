@@ -2,3 +2,4 @@ Dev/
 data/
 *.env
 .DS_Store
+!template.env
