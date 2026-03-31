@@ -1,5 +1,6 @@
 Dev/
 data/
+tests/
 *.env
 .DS_Store
 !template.env

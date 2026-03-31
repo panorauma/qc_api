@@ -8,12 +8,7 @@ Run with `python3 app.py`
 
 ### Environment variables
 
-Create .env file with following content.
-
-```env
-LOG_LEVEL="DEBUG"
-OTEL="123"
-```
+Fill `template.env` fields.
 
 LOG_LEVEL accepts: DEBUG, INFO, WARNING, ERROR. I use DEBUG for development and testing. INFO when deployed.
 
@@ -31,4 +26,4 @@ Test dataset is csv file in tidy format.
 
 ## Note
 
-Logging with opentelemetry is optional. I use it mostly for debugging. Package still needs to be installed. Removing all logging is not a priority at the moment.
+Logging with opentelemetry is optional but package still needs to be installed. I use it for debugging. Removing all logging is not a priority at the moment.

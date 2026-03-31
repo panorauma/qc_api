@@ -3,15 +3,50 @@ services:
     image: mariadb:12.2.2
     container_name: mariadb
     restart: unless-stopped
+
     environment:
-      MARIADB_ROOT_PASSWORD: rootpassword
-      MARIADB_DATABASE: myapp
-      MARIADB_USER: myuser
-      MARIADB_PASSWORD: mypassword
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+
     volumes:
       - db_data:/var/lib/mysql
+
     ports:
-      - 3306:3306 # Provides host access
+      - "3306:3306"
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mariadb-admin ping -h localhost -u root -p$MARIADB_ROOT_PASSWORD || exit 1",
+        ]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
+
+  qc_api:
+    image: ghcr.io/panorauma/qcapi:latest
+    container_name: qc_api
+    restart: unless-stopped
+
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL}
+      OTEL: ${OTEL}
+
+      DB_HOST: mariadb
+      DB_USER: ${MARIADB_USER}
+      DB_PASSWORD: ${MARIADB_PASSWORD}
+      DB_NAME: ${MARIADB_DATABASE}
+
+    ports:
+      - "8000:8000"
 
 volumes:
-  db_data: #create local folder, let docker handle
+  db_data:
