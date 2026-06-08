@@ -3,18 +3,16 @@ import uvicorn
 import json
 import uuid
 import asyncio
-import logging
 import psutil
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 
 from validators.schema_validator import SchemaValidator
 from validators.structure_validator import StructureValidator
 from server.models import ValidationResponse, DatasetRequest, DataDictionaryRequest
-from server.helper import _format_bytes, json_rows_to_df, df_to_temp_csv
+from server.helper import json_rows_to_df, df_to_temp_csv
 from validators.wrapper import run_both_validations
-from logs import setup_otel_logging
 from server.mariadb import (
     init_db_pool,
     close_db_pool,
@@ -26,57 +24,17 @@ from server.mariadb import (
 
 # configs
 load_dotenv()
-setup_otel_logging()
-log_level_name = os.getenv("LOG_LEVEL", "INFO").upper()
-log_level = getattr(logging, log_level_name, logging.INFO)
-logging.basicConfig(level=log_level)
-logger = logging.getLogger()
-logger.setLevel(log_level)
-_process = psutil.Process(os.getpid())
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    logger.info("Initializing MariaDB pool...")
     await init_db_pool()
     await create_table()
-    logger.info("MariaDB pool ready and table ensured")
     yield
-    logger.info("Closing MariaDB pool...")
     await close_db_pool()
 
 
 app = FastAPI(title="QC Tool API", lifespan=lifespan)
-
-
-# middlware: monitor RAM use
-@app.middleware("http")
-async def memory_logging_middleware(request: Request, call_next):
-    before_bytes = _process.memory_info().rss
-    response = await call_next(request)
-    after_bytes = _process.memory_info().rss
-    delta_bytes = after_bytes - before_bytes
-
-    logger.debug(
-        "[memory][request] %s %s | status=%s | before=%s after=%s delta=%+s",
-        request.method,
-        request.url.path,
-        getattr(response, "status_code", "NA"),
-        _format_bytes(before_bytes),
-        _format_bytes(after_bytes),
-        _format_bytes(delta_bytes),
-    )
-
-    if delta_bytes > 0:
-        logger.info(
-            "[memory][request] MEMORY INCREASED %s %s | status=%s | delta=%+s",
-            request.method,
-            request.url.path,
-            getattr(response, "status_code", "NA"),
-            _format_bytes(delta_bytes),
-        )
-
-    return response
 
 
 # routes start
@@ -109,7 +67,6 @@ async def create_validation_task(
             await update_task(task_id, "DONE", result=result)
         except Exception as e:
             await update_task(task_id, "ERROR", error=str(e))
-            logger.exception(f"[run_validation] ERROR | task_id={task_id}")
         finally:
             dataset_data.clear()
             datadic_data.clear()
@@ -137,7 +94,6 @@ async def validate_both(dataset: DatasetRequest, datadic: DataDictionaryRequest)
         result = await run_both_validations(dataset, datadic)
         return ValidationResponse(**result)
     except Exception as e:
-        logger.exception("[validate/core] Error")
         raise HTTPException(status_code=400, detail=str(e))
 
 

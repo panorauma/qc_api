@@ -6,4 +6,4 @@ asyncio
 dotenv
 psutil
 uptrace
-aiomysql #for mariadb
+aiomysql #mariadb
